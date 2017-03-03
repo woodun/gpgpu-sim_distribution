@@ -4,7 +4,7 @@ OpenCL. Also included in GPGPU-Sim is a performance visualization tool called
 AerialVision and a configurable and extensible energy model called GPUWattch.
 GPGPU-Sim and GPUWattch have been rigorously validated with performance and
 power measurements of real hardware GPUs. 
-
+hahahah
 This version of GPGPU-Sim has been tested with CUDA version 2.3, 3.1 and 4.0.
 
 Please see the copyright notice in the file COPYRIGHT distributed with this
