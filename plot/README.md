@@ -1,7 +1,7 @@
 The plot folder has 2 sub-directories. "First Version" is the raw plot of a hit.txt without knowing for which mem_chip. "Final Version" is the refined plot scripts to draw all the banks for 6 memory chips.
 
 If you want to use the plot script, please copy the three files into the folder containing "hit.txt", like:
-# Do copy...
+\# Do copy...
 cd my_hit.txt_path
 # Then run:
 g++ allchipstat.cpp
