@@ -33,7 +33,7 @@ if (len(sys.argv)==2):
 			for line in pp:
 				percent[c]=[float(n) for n in line.split()]
 				c+=1
-		print(percent)
+		# print(percent)
 
 		# ***********************start plotting***********************
 		bank=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
