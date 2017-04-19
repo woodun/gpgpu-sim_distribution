@@ -34,45 +34,47 @@ void stat(string& a)
 
   ifstream f(a,ios::in);
   int chip, bank, row;
+  char status;
   //char rw; // read or write operation, temporarily discard
   while (!f.eof())
   {
-    f>>chip>>bank>>row;
-    if (old[chip][bank]!=row)
+    f>>chip>>bank>>row>>status;
+    if (status=='a')
     {
-      if (old[chip][bank]!=-1)
-      {
-        count[chip][bank]-=1;
-        hit[chip][bank][count[chip][bank]>5?5:count[chip][bank]]++;
-      }
       old[chip][bank]=row;
-      count[chip][bank]=1;
+      count[chip][bank]=0;
     }
-    else
+    else if (status=='r' || status=='w')
+    {
+      if (row==old[chip][bank])
       {count[chip][bank]++;}
+      else abort();
+    }
+    else if (status=='i')
+    {
+      hit[chip][bank][count[chip][bank]>6?5:(count[chip][bank]-1)]++;
+    }
     //cout<<bank<<" "<<row<<" "<<rw<<"\t"<<count[bank]<<endl; getchar(); // debug flag
   }
-  for (int n=0;n<6;n++){
-    count[n][bank]--;
-    for (int i=0;i<16;i++)
+  for (int i=0;i<6;i++)
+  {
+    for (int j=0;j<6;j++)
     {
-      if (count[n][i]>0) {
-        count[n][i]-=1;
-        hit[n][i][count[n][i]>5?5:count[n][i]]++;
-      }
-    }
-    for (int i=0;i<6;i++)
-    {
-      for (int j=0;j<16;j++)
+      for (int k=0;k<16;k++)
       {
-        hit[n][16][i]+=hit[n][j][i];
+        hit[i][16][j]+=hit[i][k][j];
       }
     }
-    for (int i=0;i<17;i++)
+  }
+  for (int i=0;i<6;i++)
+  {
+    for (int j=0;j<17;j++)
     {
-      hit[n][i][6]=0;
-      for (int j=0;j<6;j++)
-        {hit[n][i][6]+=hit[n][i][j];}
+      hit[i][j][6]=0;
+      for (int k=0;k<6;k++)
+      {
+        hit[i][j][6]+=hit[i][j][k];
+      }
     }
   }
   // save to files:
