@@ -35,6 +35,8 @@
 #include <list>
 #include <map>
 
+extern int counter[6][6];
+
 class frfcfs_scheduler {
 public:
    frfcfs_scheduler( const memory_config *config, dram_t *dm, memory_stats_t *stats );

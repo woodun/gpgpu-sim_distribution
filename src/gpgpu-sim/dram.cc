@@ -34,8 +34,6 @@
 #include "mem_fetch.h"
 #include "l2cache.h"
 
-#include <fstream>
-
 #ifdef DRAM_VERIFY
 int PRINT_CYCLE = 0;
 #endif
@@ -110,9 +108,6 @@ dram_t::dram_t( unsigned int partition_id, const struct memory_config *config, m
    n_req_partial = 0;
    ave_mrqs_partial = 0;
    bwutil_partial = 0;
-
-   cout<<"****************************************************"<<endl; // debug flag
-   cout<<"number of channels: "<<m_config->nbkgrp<<endl;
 
    if ( queue_limit() )
       mrqq_Dist = StatCreate("mrqq_length",1, queue_limit());
@@ -207,11 +202,8 @@ void dram_t::scheduler_fifo()
 #define DEC2ZERO(x) x = (x)? (x-1) : 0;
 #define SWAP(a,b) a ^= b; b ^= a; a ^= b;
 
-void dram_t::cycle() // David: This is the main function that I want to modify...
+void dram_t::cycle()
 {
-
-   // David: file create(append mode): output format: ChipID(id), Bank(bk), Row -- separated by '\t'
-   ofstream wf("hit.txt", std::ios_base::app);
 
    if( !returnq->full() ) {
        dram_req_t *cmd = rwq->pop();
@@ -283,10 +275,6 @@ void dram_t::cycle() // David: This is the main function that I want to modify..
                rw=READ;
                rwq->set_min_length(m_config->CL);
             }
-            //dram_hit.push_back(make_pair(bk[j]->curr_row,'R')); // David: add a read hit to the hit vector.
-	    wf<<id<<'\t'<<j<<'\t'<<bk[j]->curr_row<<"\n";
-	    wf.flush();
-
             rwq->push(bk[j]->mrq);
             bk[j]->mrq->txbytes += m_config->dram_atom_size; 
             CCDc = m_config->tCCD;
@@ -321,10 +309,6 @@ void dram_t::cycle() // David: This is the main function that I want to modify..
                rw=WRITE;
                rwq->set_min_length(m_config->WL);
             }
-            //dram_hit.push_back(make_pair(bk[j]->curr_row,'W')); // David: add a write hit to the hit vector.
-	    wf<<id<<'\t'<<j<<'\t'<<bk[j]->curr_row<<"\n";
-	    wf.flush();
-
             rwq->push(bk[j]->mrq);
 
             bk[j]->mrq->txbytes += m_config->dram_atom_size; 
@@ -434,7 +418,6 @@ void dram_t::cycle() // David: This is the main function that I want to modify..
 #ifdef DRAM_VISUALIZE
    visualize();
 #endif
-wf.close();	// David: Close the write stream
 }
 
 //if mrq is being serviced by dram, gets popped after CL latency fulfilled
@@ -570,55 +553,3 @@ void dram_t::set_dram_power_stats(	unsigned &cmd,
 	wr = n_wr;
 	req = n_req;
 }
-
-/*
-dram_t::~dram_t()
-{
-  // file manipulation:
-  cout<<"Entering dram_t Destructor..."<<endl<<"**Preparing to output dram hits statistics. File name will be \"hit.txt\"..."<<endl;
-  ifstream f("/home/f85/rchai/hit.txt");
-  if (f.good())
-  {
-    cout<<"File existed! Now going to delete it and create a new one..."<<endl;
-    if (remove("/home/f85/rchai/hit.txt")!=0)
-      {perror("Deleting hit.txt failed!!!\n");}
-    else
-      {puts("Successfully delete hit.txt.\n");}
-  }
-  f.close();
-  // create "hit.txt" and save data
-  ofstream w("/home/f85/rchai/hit.txt");
-  for (unsigned int i=0;i<dram_hit.size();i++)
-  {
-    w<<dram_hit[i].first<<'\t'<<dram_hit[i].second<<endl;
-    w.flush();
-    //w<<p.first<<'\t'<<p.second<<endl;
-    //w.flush();
-  }
-  // stats:
-  long t[7]={0,0,0,0,0,0,0};
-  unsigned old;
-  int counter=0;
-  for (unsigned int i=0;i<dram_hit.size();i++)
-  {
-    if (old!=dram_hit[i].first)
-    {
-      t[counter>6?6:counter]++;
-      counter=1;
-      old=dram_hit[i].first;
-    }
-  else
-    {counter++;}
-  }
-  t[counter>6?6:counter]++;
-  long sum=0;
-  for (int i=1;i<7;i++)
-    {sum+=t[i];}
-  for (int i=1;i<7;i++)
-  {
-    w<<"Row hit number "<<i<<" times is: "<<t[i]<<"\t Percentage is: "<<t[i]/(double)sum <<endl;
-    w.flush();
-  }
-  w.close();
-  cout<<"All DRAM hit data written to hit.txt."<<endl<<"Done."<<endl;
-}*/

@@ -38,9 +38,9 @@
 
 #include <pthread.h>
 #include <semaphore.h>
+#include "gpgpu-sim/dram_sched.h"
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
-
 
 
 struct gpgpu_ptx_sim_arg *grid_params;
@@ -55,7 +55,7 @@ gpgpu_sim_config g_the_gpu_config;
 gpgpu_sim *g_the_gpu;
 stream_manager *g_stream_manager;
 
-
+int total[6];
 
 static int sg_argc = 3;
 static const char *sg_argv[] = {"", "-config","gpgpusim.config"};
@@ -81,6 +81,22 @@ void *gpgpu_sim_thread_sequential(void*)
           g_the_gpu->print_stats();
           g_the_gpu->update_stats();
           print_simulation_time();
+// ****** David:
+fflush(stdout);
+
+for (int i=0;i<6;i++)
+{
+total[i]=0;
+for (int j=0;j<6;j++)
+{std::cout<<counter[i][j]<<'\t'; total[i]+=counter[j][i];}
+std::cout<<'\n';
+}
+std::cout<<"Total(6 chips):"<<std::endl;
+for (int i=0;i<6;i++)
+{std::cout<<total[i]<<'\t';}
+std::cout<<'\n';
+fflush(stdout);
+// ******
       }
       sem_post(&g_sim_signal_finish);
    } while(!done);
@@ -96,11 +112,11 @@ void *gpgpu_sim_thread_concurrent(void*)
 {
     // concurrent kernel execution simulation thread
     do {
-       if(g_debug_execution >= 3) {
-          printf("GPGPU-Sim: *** simulation thread starting and spinning waiting for work ***\n");
-          fflush(stdout);
-       }
-        while( g_stream_manager->empty_protected() && !g_sim_done )
+        if(g_debug_execution >= 3) {
+           printf("GPGPU-Sim: *** simulation thread starting and spinning waiting for work ***\n");
+           fflush(stdout);
+        }
+        while( g_stream_manager->empty() && !g_sim_done )
             ;
         if(g_debug_execution >= 3) {
            printf("GPGPU-Sim: ** START simulation thread (detected work) **\n");
@@ -127,20 +143,49 @@ void *gpgpu_sim_thread_concurrent(void*)
             if(g_stream_manager->operation(&sim_cycles) && !g_the_gpu->active())
                 break;
 
+            //functional simulation
+            if( g_the_gpu->is_functional_sim()) {
+                kernel_info_t * kernel = g_the_gpu->get_functional_kernel();
+                assert(kernel);
+                gpgpu_cuda_ptx_sim_main_func(*kernel);
+                g_the_gpu->finish_functional_sim(kernel);
+            }
+
+            //performance simulation
             if( g_the_gpu->active() ) {
                 g_the_gpu->cycle();
                 sim_cycles = true;
                 g_the_gpu->deadlock_check();
+            }else {
+                if(g_the_gpu->cycle_insn_cta_max_hit()){
+                    g_stream_manager->stop_all_running_kernels();
+                    g_sim_done = true;
+                }
             }
+
             active=g_the_gpu->active() || !g_stream_manager->empty_protected();
         } while( active );
         if(g_debug_execution >= 3) {
            printf("GPGPU-Sim: ** STOP simulation thread (no work) **\n");
            fflush(stdout);
         }
+        g_the_gpu->print_stats();
         if(sim_cycles) {
             g_the_gpu->update_stats();
             print_simulation_time();
+// ****** David:
+for (int i=0;i<6;i++)
+{
+total[i]=0;
+for (int j=0;j<6;j++)
+{std::cout<<counter[i][j]<<'\t'; total[i]+=counter[j][i];}
+std::cout<<'\n';
+}
+std::cout<<"Total(6 chips):"<<std::endl;
+for (int i=0;i<6;i++)
+{std::cout<<total[i]<<'\t';}
+std::cout<<'\n';
+// ******
         }
         pthread_mutex_lock(&g_sim_lock);
         g_sim_active = false;

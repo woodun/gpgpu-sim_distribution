@@ -31,6 +31,10 @@
 #include "../abstract_hardware_model.h"
 #include "mem_latency_stat.h"
 
+int counter[6][6];
+bool status[6][16];
+int flag=0;
+
 frfcfs_scheduler::frfcfs_scheduler( const memory_config *config, dram_t *dm, memory_stats_t *stats )
 {
    m_config = config;
@@ -49,7 +53,19 @@ frfcfs_scheduler::frfcfs_scheduler( const memory_config *config, dram_t *dm, mem
       curr_row_service_time[i] = 0;
       row_service_timestamp[i] = 0;
    }
-
+// ********** David:
+	if (flag==0)
+	{
+		for (int i=0;i<6;i++)
+		{
+			for (int j=0;j<16;j++)
+			{status[i][j]=false;}
+			for (int j=0;j<6;j++)
+			{counter[i][j]=0;}
+		}
+		flag=1;
+	}
+// **********
 }
 
 void frfcfs_scheduler::add_req( dram_req_t *req )
@@ -88,6 +104,12 @@ dram_req_t *frfcfs_scheduler::schedule( unsigned bank, unsigned curr_row )
          bin_ptr = m_bins[bank].find( req->row );
          assert( bin_ptr != m_bins[bank].end() ); // where did the request go???
          m_last_row[bank] = &(bin_ptr->second);
+// ******* David:
+if (status[m_dram->id][bank]==false &&  m_stats->concurrent_row_access[m_dram->id][bank]>0)
+{
+counter[m_dram->id][ m_stats->concurrent_row_access[m_dram->id][bank]>6?5:(m_stats->concurrent_row_access[m_dram->id][bank]-1)]++;
+}
+// *******
          data_collection(bank);
       } else {
          m_last_row[bank] = &(bin_ptr->second);
@@ -96,6 +118,15 @@ dram_req_t *frfcfs_scheduler::schedule( unsigned bank, unsigned curr_row )
    }
    std::list<dram_req_t*>::iterator next = m_last_row[bank]->back();
    dram_req_t *req = (*next);
+// ********* David:
+if (req->data->get_access_type() != GLOBAL_ACC_R && req->data->isatomic())
+{
+status[m_dram->id][bank]=true;
+}
+
+
+// *********
+
 
    m_stats->concurrent_row_access[m_dram->id][bank]++;
    m_stats->row_access[m_dram->id][bank]++;
