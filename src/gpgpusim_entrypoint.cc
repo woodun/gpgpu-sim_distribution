@@ -82,7 +82,7 @@ void *gpgpu_sim_thread_sequential(void*)
           g_the_gpu->update_stats();
           print_simulation_time();
 // ****** David:
-fflush(stdout);
+//fflush(stdout);
 
 for (int i=0;i<6;i++)
 {
@@ -95,7 +95,7 @@ std::cout<<"Total(6 chips):"<<std::endl;
 for (int i=0;i<6;i++)
 {std::cout<<total[i]<<'\t';}
 std::cout<<'\n';
-fflush(stdout);
+//fflush(stdout);
 // ******
       }
       sem_post(&g_sim_signal_finish);
