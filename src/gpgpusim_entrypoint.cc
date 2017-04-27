@@ -78,12 +78,9 @@ void *gpgpu_sim_thread_sequential(void*)
               g_the_gpu->cycle();
               g_the_gpu->deadlock_check();
           }
-          g_the_gpu->print_stats();
-          g_the_gpu->update_stats();
-          print_simulation_time();
          
-         // ****** David:
-         /*
+                  // ****** David:
+         
          fflush(stdout);
          
          for (int i=0;i<6;i++)
@@ -113,8 +110,14 @@ void *gpgpu_sim_thread_sequential(void*)
          printf("\n");
          //std::cout<<'\n';
          fflush(stdout);
-         */
+         
          // ******
+         
+          g_the_gpu->print_stats();
+          g_the_gpu->update_stats();
+          print_simulation_time();
+         
+
       }
       sem_post(&g_sim_signal_finish);
    } while(!done);
@@ -187,13 +190,8 @@ void *gpgpu_sim_thread_concurrent(void*)
            printf("GPGPU-Sim: ** STOP simulation thread (no work) **\n");
            fflush(stdout);
         }
-        g_the_gpu->print_stats();
-        if(sim_cycles) {
-            g_the_gpu->update_stats();
-            print_simulation_time();
-           
-         // ****** David:
-          /*
+       
+                // ****** David:         
          fflush(stdout);
          
          for (int i=0;i<6;i++)
@@ -222,10 +220,13 @@ void *gpgpu_sim_thread_concurrent(void*)
          }
          printf("\n");
          //std::cout<<'\n';
-         fflush(stdout);
-         */
-         //****** 
-           
+         fflush(stdout);       
+         // ******
+       
+        g_the_gpu->print_stats();
+        if(sim_cycles) {
+            g_the_gpu->update_stats();
+            print_simulation_time();
         }
         pthread_mutex_lock(&g_sim_lock);
         g_sim_active = false;
