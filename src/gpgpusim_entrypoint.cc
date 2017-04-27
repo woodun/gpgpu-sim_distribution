@@ -83,6 +83,7 @@ void *gpgpu_sim_thread_sequential(void*)
           print_simulation_time();
          
          // ****** David:
+         /*
          fflush(stdout);
          
          for (int i=0;i<6;i++)
@@ -112,6 +113,7 @@ void *gpgpu_sim_thread_sequential(void*)
          printf("\n");
          //std::cout<<'\n';
          fflush(stdout);
+         */
          // ******
       }
       sem_post(&g_sim_signal_finish);
@@ -189,7 +191,9 @@ void *gpgpu_sim_thread_concurrent(void*)
         if(sim_cycles) {
             g_the_gpu->update_stats();
             print_simulation_time();
+           
          // ****** David:
+          /*
          fflush(stdout);
          
          for (int i=0;i<6;i++)
@@ -219,6 +223,7 @@ void *gpgpu_sim_thread_concurrent(void*)
          printf("\n");
          //std::cout<<'\n';
          fflush(stdout);
+         */
          //****** 
            
         }
