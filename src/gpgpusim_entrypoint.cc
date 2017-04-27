@@ -81,22 +81,38 @@ void *gpgpu_sim_thread_sequential(void*)
           g_the_gpu->print_stats();
           g_the_gpu->update_stats();
           print_simulation_time();
-// ****** David:
-//fflush(stdout);
-
-for (int i=0;i<6;i++)
-{
-total[i]=0;
-for (int j=0;j<6;j++)
-{std::cout<<counter[i][j]<<'\t'; total[i]+=counter[j][i];}
-std::cout<<'\n';
-}
-std::cout<<"Total(6 chips):"<<std::endl;
-for (int i=0;i<6;i++)
-{std::cout<<total[i]<<'\t';}
-std::cout<<'\n';
-//fflush(stdout);
-// ******
+         
+         // ****** David:
+         fflush(stdout);
+         
+         for (int i=0;i<6;i++)
+         {
+            total[i]=0;
+            
+            printf("dram%u pdf:",i);            
+            for (int j=0;j<6;j++)
+            {              
+               //std::cout<<counter[i][j]<<'\t';
+               total[i]+=counter[j][i];
+               printf("%u ",counter[i][j]);
+               fflush(stdout);
+            }
+             printf("\n");
+            //std::cout<<'\n';
+         }
+         
+         ///std::cout<<"Total(6 chips):"<<std::endl;
+         printf("total pdf:");
+         for (int i=0;i<6;i++)
+         {
+            ///std::cout<<total[i]<<'\t';
+            printf("%u ",total[i]);
+            fflush(stdout);
+         }
+         printf("\n");
+         //std::cout<<'\n';
+         fflush(stdout);
+         // ******
       }
       sem_post(&g_sim_signal_finish);
    } while(!done);
@@ -173,19 +189,38 @@ void *gpgpu_sim_thread_concurrent(void*)
         if(sim_cycles) {
             g_the_gpu->update_stats();
             print_simulation_time();
-// ****** David:
-for (int i=0;i<6;i++)
-{
-total[i]=0;
-for (int j=0;j<6;j++)
-{std::cout<<counter[i][j]<<'\t'; total[i]+=counter[j][i];}
-std::cout<<'\n';
-}
-std::cout<<"Total(6 chips):"<<std::endl;
-for (int i=0;i<6;i++)
-{std::cout<<total[i]<<'\t';}
-std::cout<<'\n';
-// ******
+         // ****** David:
+         fflush(stdout);
+         
+         for (int i=0;i<6;i++)
+         {
+            total[i]=0;
+            
+            printf("dram%u pdf:",i);            
+            for (int j=0;j<6;j++)
+            {              
+               //std::cout<<counter[i][j]<<'\t';
+               total[i]+=counter[j][i];
+               printf("%u ",counter[i][j]);
+               fflush(stdout);
+            }
+             printf("\n");
+            //std::cout<<'\n';
+         }
+         
+         ///std::cout<<"Total(6 chips):"<<std::endl;
+         printf("total pdf:");
+         for (int i=0;i<6;i++)
+         {
+            ///std::cout<<total[i]<<'\t';
+            printf("%u ",total[i]);
+            fflush(stdout);
+         }
+         printf("\n");
+         //std::cout<<'\n';
+         fflush(stdout);
+         //****** 
+           
         }
         pthread_mutex_lock(&g_sim_lock);
         g_sim_active = false;
