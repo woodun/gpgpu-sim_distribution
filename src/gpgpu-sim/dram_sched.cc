@@ -109,6 +109,7 @@ if (status[m_dram->id][bank]==false &&  m_stats->concurrent_row_access[m_dram->i
 {
 counter[m_dram->id][ m_stats->concurrent_row_access[m_dram->id][bank]>6?5:(m_stats->concurrent_row_access[m_dram->id][bank]-1)]++;
 }
+	      status[m_dram->id][bank]==false;
 // *******
          data_collection(bank);
       } else {
