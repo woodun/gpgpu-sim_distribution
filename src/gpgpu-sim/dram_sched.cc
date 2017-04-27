@@ -59,9 +59,13 @@ frfcfs_scheduler::frfcfs_scheduler( const memory_config *config, dram_t *dm, mem
 		for (int i=0;i<6;i++)
 		{
 			for (int j=0;j<16;j++)
-			{status[i][j]=false;}
+			{
+				status[i][j]=false;
+			}
 			for (int j=0;j<6;j++)
-			{counter[i][j]=0;}
+			{
+				counter[i][j]=0;
+			}
 		}
 		flag=1;
 	}
@@ -104,13 +108,24 @@ dram_req_t *frfcfs_scheduler::schedule( unsigned bank, unsigned curr_row )
          bin_ptr = m_bins[bank].find( req->row );
          assert( bin_ptr != m_bins[bank].end() ); // where did the request go???
          m_last_row[bank] = &(bin_ptr->second);
-// ******* David:
-if (status[m_dram->id][bank]==false &&  m_stats->concurrent_row_access[m_dram->id][bank]>0)
-{
-counter[m_dram->id][ m_stats->concurrent_row_access[m_dram->id][bank]>6?5:(m_stats->concurrent_row_access[m_dram->id][bank]-1)]++;
-}
+	      
+	      // ******* David:
+	      if (status[m_dram->id][bank]==false &&  m_stats->concurrent_row_access[m_dram->id][bank]>0)
+	      {
+		      
+		      
+		      if((m_stats->concurrent_row_access[m_dram->id][bank]) >= 6){
+			      
+			      counter[m_dram->id][5]++;			      
+		      }else{
+			      
+			      counter[m_dram->id][(m_stats->concurrent_row_access[m_dram->id][bank]) - 1]++;
+		      }
+	      }
+	      
 	      status[m_dram->id][bank]==false;
-// *******
+	      // *******
+	      
          data_collection(bank);
       } else {
          m_last_row[bank] = &(bin_ptr->second);
@@ -118,15 +133,14 @@ counter[m_dram->id][ m_stats->concurrent_row_access[m_dram->id][bank]>6?5:(m_sta
       }
    }
    std::list<dram_req_t*>::iterator next = m_last_row[bank]->back();
-   dram_req_t *req = (*next);
-// ********* David:
-if (req->data->get_access_type() != GLOBAL_ACC_R && req->data->isatomic())
-{
-status[m_dram->id][bank]=true;
-}
-
-
-// *********
+	dram_req_t *req = (*next);
+	
+	// ********* David:
+	if (req->data->get_access_type() != GLOBAL_ACC_R && req->data->isatomic())
+	{
+		status[m_dram->id][bank]=true;
+	}
+	// *********
 
 
    m_stats->concurrent_row_access[m_dram->id][bank]++;
